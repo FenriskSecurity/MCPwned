@@ -13,7 +13,7 @@ public class Extension implements BurpExtension {
     @Override
     public void initialize(MontoyaApi api) {
         Logger.init(api);
-        Logger.info("Extension starting. V1.0.0");
+        Logger.info("Extension starting. V1.0.1");
         api.extension().setName("MCPwned");
 
         // Settings panel (Burp > Settings > Extensions > MCPwned)
