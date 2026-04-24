@@ -1,3 +1,10 @@
+<style>
+    /* line wrap in code blocks*/
+    code {
+        white-space : pre-wrap !important;
+    }
+</style>
+
 # MCPwned
 
 One-line summary : `Companion extension for pwning MCP servers`
@@ -10,7 +17,7 @@ MCPwned is a companion extension that enables pentesters to effectively test MCP
 
 ## Basic Usage
 
-Whenever you encounter an MCP-like endpoint the extension will color it in grey. From there you can send the request to the extension with a right-click or a `Ctrl + M` shortcut. You can among others :
+Whenever you encounter an MCP-like endpoint the extension will color it in gray. From there you can send the request to the extension with a right-click or a `Ctrl + M` shortcut. You can among others :
 
 - Send a capability usage template to the repeater (also supports completion)
 - Annotate/color capabilities to stay organized

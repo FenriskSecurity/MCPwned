@@ -13,7 +13,7 @@ public class Extension implements BurpExtension {
     @Override
     public void initialize(MontoyaApi api) {
         Logger.init(api);
-        Logger.info("Extension starting. V1.0.1");
+        Logger.info("Extension starting. V1.0.2");
         api.extension().setName("MCPwned");
 
         // Settings panel (Burp > Settings > Extensions > MCPwned)
@@ -54,6 +54,12 @@ public class Extension implements BurpExtension {
 
         // Auto-detect MCP traffic in proxy and highlight in gray
         api.proxy().registerResponseHandler(new McpProxyDetector());
+
+        // Clean up background threads when the extension is unloaded
+        api.extension().registerUnloadingHandler(() -> {
+            Logger.info("Extension unloading, shutting down background tasks...");
+            tab.shutdown();
+        });
 
         Logger.info("Extension loaded.");
     }

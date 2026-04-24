@@ -13,9 +13,12 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MCPwnedTab {
 
@@ -27,7 +30,12 @@ public class MCPwnedTab {
     private final JTree tree;
     private final JEditorPane detailPane;
     private JButton refreshButton;
-    private final Map<String, DefaultMutableTreeNode> serverNodesByUrl = new HashMap<>();
+    private final Map<String, DefaultMutableTreeNode> serverNodesByUrl = new ConcurrentHashMap<>();
+    private final ExecutorService probeExecutor = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "MCPwned-Probe");
+        t.setDaemon(true);
+        return t;
+    });
 
     private static final String PERSIST_KEY = "mcpwned_servers";
 
@@ -233,7 +241,7 @@ public class MCPwnedTab {
             refreshButton.setEnabled(false);
         });
 
-        new Thread(() -> {
+        probeExecutor.submit(() -> {
             MCPProber.MCPProbeResult result = prober.probe(finalOriginalRequest);
             SwingUtilities.invokeLater(() -> {
                 buildServerTree(serverNode, result, finalOriginalRequest);
@@ -253,7 +261,7 @@ public class MCPwnedTab {
                     onSessionId.accept(result.getSessionId());
                 }
             });
-        }).start();
+        });
     }
 
     /**
@@ -333,15 +341,17 @@ public class MCPwnedTab {
         Logger.info("Scanning MCP endpoint: " + url);
         flashTab();
 
-        // Reuse existing node for this URL, or create a new one
-        DefaultMutableTreeNode serverNode;
-        if (serverNodesByUrl.containsKey(url)) {
-            serverNode = serverNodesByUrl.get(url);
+        // Reuse existing node for this URL, or create a new one.
+        // serverNodesByUrl is ConcurrentHashMap, but tree model mutations happen on the EDT.
+        DefaultMutableTreeNode existing = serverNodesByUrl.get(url);
+        final DefaultMutableTreeNode serverNode;
+        if (existing != null) {
+            serverNode = existing;
             Logger.info("Re-scanning existing endpoint: " + url);
             SwingUtilities.invokeLater(() -> {
-                serverNodesByUrl.get(url).setUserObject(url + " (re-scanning...)");
-                serverNodesByUrl.get(url).removeAllChildren();
-                treeModel.reload(serverNodesByUrl.get(url));
+                serverNode.setUserObject(url + " (re-scanning...)");
+                serverNode.removeAllChildren();
+                treeModel.reload(serverNode);
             });
         } else {
             serverNode = new DefaultMutableTreeNode(url + " (scanning...)");
@@ -353,11 +363,23 @@ public class MCPwnedTab {
             });
         }
 
-        // Probe in background
-        new Thread(() -> {
+        // Probe on the shared executor so it can be shut down cleanly on unload
+        probeExecutor.submit(() -> {
             MCPProber.MCPProbeResult result = prober.probe(requestResponse);
             SwingUtilities.invokeLater(() -> buildServerTree(serverNode, result, requestResponse));
-        }).start();
+        });
+    }
+
+    /**
+     * Shuts down background threads. Called from the extension unloading handler.
+     */
+    public void shutdown() {
+        probeExecutor.shutdownNow();
+        try {
+            probeExecutor.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void buildServerTree(DefaultMutableTreeNode serverNode, MCPProber.MCPProbeResult result,
