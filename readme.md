@@ -1,19 +1,10 @@
-<style>
-    /* line wrap in code blocks*/
-    code {
-        white-space : pre-wrap !important;
-    }
-</style>
-
 # MCPwned
 
 One-line summary : `Companion extension for pwning MCP servers`
 
 Detailed description :
 
-```
-MCPwned is a companion extension that enables pentesters to effectively test MCP servers. It recognizes MCP-like endpoints, provides a scanner and a tree-like display of capabilities, as well as a template request for each capability. It also provides quality of life features such as response extracting and session ID refresh. 
-```
+> MCPwned is a companion extension that enables pentesters to effectively test MCP servers. It recognizes MCP-like endpoints, provides a scanner and a tree-like display of capabilities, as well as a template request for each capability. It also provides quality of life features such as response extracting and session ID refresh. 
 
 ## Basic Usage
 
@@ -72,19 +63,18 @@ Please find below the other features ;)
 
 - [x] Hangs on `HTTPStreambuilder`
 - [x] Color bug in tree
-- [ ] Tree sometimes showing up weird when reloading project
+- [x] Session ID being invalidated when SDK sends DELETE
 - [x] `Scan with ...` Not working from `repeater` and other pane-based tabs
 - [x] `Send to repeater` does not properly focus the new tab
-- [ ] `\n` not handled properly in the right panel when used in description
 - [x] Foreground color does not update properly on leaves leaving white on white sometimes
+- [ ] Tree sometimes showing up weird when reloading project
+- [ ] `\n` not handled properly in the right panel when used in description
 - [ ] Server data display does not refresh upon session refresh
-- [x] Session ID being invalidated when SDK sends DELETE
 
 ## BApp Store acceptance criteria
 
 - [x] It performs a unique function.
-- [x] It has a clear, descriptive name.
-  - [x] provide a one-line summary that appears in the list (web only), as well as a more detailed description.
+- [x] It has a clear, descriptive name
 - [x] It operates securely.
 - [x] It includes all dependencies.
 - [x] It uses threads to maintain responsiveness.
@@ -96,4 +86,3 @@ Please find below the other features ;)
 - [x] It provides a parent for GUI elements.
 - [x] It uses the Montoya API artifact.
 - [x] It uses Burp AI as the default AI provider
-  - N/A
